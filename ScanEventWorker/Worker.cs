@@ -22,6 +22,7 @@ namespace ScanEventWorker
 
             try
             {
+                //Initialization
                 DatabaseAccessHelper.InitializeDatabase();
                 WorkerConfigStore.GetWorkerConfig();
                 LogTypeStore.InitializeLogTypeId();
@@ -36,26 +37,29 @@ namespace ScanEventWorker
             {
                 int fromEventId = ConstantHelper.INIT_EVENT_ID;
                 while (!stoppingToken.IsCancellationRequested)
-                {
+                {// until cancellation, do the followings
                     _logger.LogInformation($"From: {fromEventId} take: {ConstantHelper.LIMIT}");
                     
+                    //fetch scanEvents via API call with pagination
                     var events = await ApiHelper.AsyncGetScanEvents(fromEventId, ConstantHelper.LIMIT);
                     if (events?.ScanEvents?.Any() == true)
-                    {
+                    {// response list not empty
                         WorkerLogStore.Log(ConstantHelper.INFO_LOG_TYPE_ID, $"Fetching ScanEvents from: {fromEventId} take: {ConstantHelper.LIMIT} received: {events?.ScanEvents?.Count} ");
                         foreach (var e in events.ScanEvents ?? Enumerable.Empty<ScanEvent>())
-                        {
+                        {//process events one by one
+
                             ProcessScanEvent(e);
 
                             if (fromEventId < e.EventId + 1)
                             {
                                 fromEventId = e.EventId + 1;
                             }
+                            // update last process Event Id 
                             WorkerConfigStore.UpdateLastProcessedEventId(e.EventId);
                         }
                     }
                     else
-                    {
+                    {// empty response list
                         WorkerLogStore.Log(ConstantHelper.INFO_LOG_TYPE_ID, $"Fetching ScanEvents from: {fromEventId} take: {ConstantHelper.LIMIT} received: 0 ");
                         await Task.Delay(ConstantHelper.API_TIME, stoppingToken);
                     }
@@ -79,6 +83,7 @@ namespace ScanEventWorker
                 ScanEventStore.RemoveScanEventByParcelId(scanEvent.ParcelId);
                 ScanEventStore.InsertScanEvent(scanEvent);
             }
+            //add Event History
             ParcelEventHistoryStore.InsertParcelEventHistory(scanEvent.ParcelId, scanEvent.Type, scanEvent.CreatedDateTimeUtc);
         }
         

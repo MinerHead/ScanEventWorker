@@ -54,6 +54,7 @@ namespace ScanEventWorker
     {
         internal static void InsertScanEvent(ScanEvent scanEvent)
         {
+            // add scanEvent record into Parcel table
             var typeId = EventTypeStore.GetTypeIdByType(scanEvent.Type);
             if (typeId > 0)
             {
@@ -66,12 +67,14 @@ namespace ScanEventWorker
 
         internal static void RemoveScanEventByParcelId(int parcelId)
         {
+            // delete all records by parcelId
             string sql = @"DELETE FROM Parcel WHERE ParcelId = @0";
             DatabaseAccessHelper.ExecuteSql(sql, parcelId);
         }
 
         internal static bool CheckParcelIdWithLaterDateExist(int parcelId, DateTime createdDatetime)
         {
+            // check event with same parcelId and a later date exists
             string sql = @"SELECT count(parcelId) FROM Parcel WHERE ParcelId = @0 AND CreatedDateTimeUtc >= @1";
             var res = DatabaseAccessHelper.ExecuteScalar(sql, parcelId, createdDatetime.ToUniversalTime());
             if (res == null)

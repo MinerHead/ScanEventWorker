@@ -10,6 +10,7 @@ namespace ScanEventWorker
     {
         internal static void InitializeLogTypeId()
         {
+            //Initialize log type IDs 
             ConstantHelper.INFO_LOG_TYPE_ID = GetLogTypeIdByLogType("INFO");
             ConstantHelper.WARNING_LOG_TYPE_ID = GetLogTypeIdByLogType("WARNING");
             ConstantHelper.ERROR_LOG_TYPE_ID = GetLogTypeIdByLogType("ERROR");
@@ -18,6 +19,7 @@ namespace ScanEventWorker
 
         internal static int GetLogTypeIdByLogType(string type)
         {
+            //Get log type ID by name
             var upperCase = type.ToUpper();
             string sql = @"SELECT LogTypeId FROM LogType WHERE LogType = @0";
             var res = DatabaseAccessHelper.ExecuteScalar(sql, upperCase);
