@@ -4,6 +4,23 @@ This is a .Net 6.0 Worker Service Application consuming a scan event API (GET ht
 ## Additional Tools Required
 DB Browser for Sqlite db
 
+## Useful SQL Scripts
+1. to fetch latest event by parcelId
+```
+  SELECT ParcelId, EventId, y.Type, CreatedDateTimeUtc, StatusCode, RunId
+  FROM Parcel x
+  INNER JOIN EventType y ON x.TypeId = y.TypeId
+  WHERE ParcelId = {parcelId}
+```
+2. to fetch pickup and delivery events by parcelId order by CreatedDateTimeUtc
+```
+  SELECT ParcelId, y.Type, CreatedDateTimeUtc
+  FROM ParcelEventHistory x
+  INNER JOIN EventType y ON x.TypeId = y.TypeId
+  WHERE ParcelId = {parcelId} AND y.Type IN ('PICKUP', 'DELIVERY')
+  ORDER BY CreatedDateTimeUtc
+```
+
 ## Assumptions
 1. API server is always active
 2. EventId and CreatedDateTimeUtc values are not monotonic related
